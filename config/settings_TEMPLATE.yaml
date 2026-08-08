@@ -22,7 +22,9 @@ database:
 # the converter's MQTT gateway mode.
 meter:
   converter_ip: "192.168.1.63"   # the converter's IP once it's on your building WiFi
-  modbus_tcp_port: 502           # Waveshare's Modbus TCP passthrough port (default 502)
+  modbus_tcp_port: 8899          # Waveshare's "Network A" TCP server port — check the converter's
+                                  # own "Network A Setting" page (under Application Setting) for the
+                                  # actual port; 8899 is the converter's own default, not 502.
   modbus_address: 1              # the meter's own Modbus slave address (PM2230 default: 1)
 
 # Used by cloud_sync.py to push new readings from the local SQLite database
