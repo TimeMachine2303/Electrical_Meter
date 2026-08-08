@@ -1,0 +1,31 @@
+# Copy this file to settings.yaml and fill in real values.
+# settings.yaml is in .gitignore so your passwords never get committed to GitHub.
+
+mqtt:
+  broker_host: "192.168.1.61"   # Raspberry Pi's IP address on the building WiFi
+  broker_port: 1883
+  # Topics follow the pattern building/unitN/meter, e.g. building/unit1/meter.
+  # This is also the "Publish topic" you type into the Waveshare converter's
+  # own MQTT setup page — it has to match exactly on both sides.
+  #
+  # The converter lets you pick your own JSON keyword for every Modbus
+  # register you map (its config UI literally asks "corresponding JSON
+  # keyword" per register). mqtt_listener.py expects the keywords
+  # "active_energy", "reactive_energy", and "power" — name the registers
+  # that on the converter's side and they'll line up automatically.
+
+database:
+  path: "data/meter_readings.db"
+
+# Used by read_meter.py to talk to a meter directly over Modbus TCP,
+# bypassing MQTT — handy for confirming wiring/registers before you trust
+# the converter's MQTT gateway mode.
+meter:
+  converter_ip: "192.168.1.63"   # the converter's IP once it's on your building WiFi
+  modbus_tcp_port: 502           # Waveshare's Modbus TCP passthrough port (default 502)
+  modbus_address: 1              # the meter's own Modbus slave address (PM2230 default: 1)
+
+# Used by cloud_sync.py to push new readings from the local SQLite database
+# up to a hosted Postgres database (e.g. a free Supabase or Neon project).
+cloud:
+  database_url: "postgresql://user:password@host:5432/dbname?sslmode=require"

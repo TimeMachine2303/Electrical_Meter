@@ -1,0 +1,6 @@
+paho-mqtt
+streamlit
+pandas
+pyyaml
+pymodbus>=3.6
+psycopg2-binary
