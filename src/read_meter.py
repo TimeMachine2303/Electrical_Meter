@@ -14,8 +14,7 @@ from pathlib import Path
 
 import yaml
 from pymodbus.client import ModbusTcpClient
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.client.mixin import ModbusClientMixin
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SETTINGS_PATH = PROJECT_ROOT / "config" / "settings.yaml"
@@ -36,15 +35,16 @@ REGISTERS = {
 
 
 def read_float(client, address, unit):
-    result = client.read_holding_registers(address, count=2, slave=unit)
+    result = client.read_holding_registers(address, count=2, device_id=unit)
     if result.isError():
         raise IOError(f"Modbus error reading register {address}: {result}")
     # If these values come back as nonsense, the meter likely expects the
-    # opposite word order — try Endian.LITTLE for wordorder instead.
-    decoder = BinaryPayloadDecoder.fromRegisters(
-        result.registers, byteorder=Endian.BIG, wordorder=Endian.BIG
+    # opposite word order — try word_order="little" instead.
+    return client.convert_from_registers(
+        result.registers,
+        data_type=ModbusClientMixin.DATATYPE.FLOAT32,
+        word_order="big",
     )
-    return decoder.decode_32bit_float()
 
 
 def main():
