@@ -32,15 +32,15 @@ CREATE TABLE IF NOT EXISTS readings (
     id INTEGER PRIMARY KEY,
     timestamp TIMESTAMPTZ NOT NULL,
     unit_id TEXT NOT NULL,
-    meter_id TEXT,
-    active_energy DOUBLE PRECISION,
-    reactive_energy DOUBLE PRECISION,
-    power DOUBLE PRECISION
+    voltage_avg_v DOUBLE PRECISION,
+    total_active_power_w DOUBLE PRECISION,
+    power_factor DOUBLE PRECISION,
+    frequency_hz DOUBLE PRECISION
 )
 """
 
 INSERT_ROW = """
-INSERT INTO readings (id, timestamp, unit_id, meter_id, active_energy, reactive_energy, power)
+INSERT INTO readings (id, timestamp, unit_id, voltage_avg_v, total_active_power_w, power_factor, frequency_hz)
 VALUES (%s, %s, %s, %s, %s, %s, %s)
 ON CONFLICT (id) DO NOTHING
 """
@@ -62,7 +62,7 @@ def fetch_new_rows(last_id):
     try:
         return local.execute(
             """
-            SELECT id, timestamp, unit_id, meter_id, active_energy, reactive_energy, power
+            SELECT id, timestamp, unit_id, voltage_avg_v, total_active_power_w, power_factor, frequency_hz
             FROM readings
             WHERE id > ?
             ORDER BY id
