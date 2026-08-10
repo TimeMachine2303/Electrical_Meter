@@ -1,9 +1,8 @@
 """
 Reads live values directly from the Schneider PM2230 over Modbus TCP,
-via the Waveshare converter's Modbus TCP-to-RTU passthrough — bypassing
-MQTT entirely. Use this to confirm wiring, the meter's Modbus address,
-and register numbers are correct before trusting the converter's MQTT
-gateway mode to publish them on its own.
+via the Waveshare converter's Modbus TCP-to-RTU gateway mode. Use this
+for a one-off check of wiring, the meter's Modbus address, and register
+numbers — poll_meter.py uses the same approach for scheduled collection.
 
 Setup: copy config/settings_TEMPLATE.yaml to config/settings.yaml and fill
 in the "meter" section with the converter's IP once it's on your WiFi.

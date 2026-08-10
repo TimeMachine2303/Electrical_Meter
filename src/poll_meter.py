@@ -3,10 +3,10 @@ Polls live values directly from the Schneider PM2230 over Modbus TCP, via
 the Waveshare converter's Modbus TCP-to-RTU gateway mode, and saves each
 reading into the local SQLite database.
 
-Replaces relying on the converter's built-in MQTT publishing
-(mqtt_listener.py) — that path depends on undocumented, unreliable
-firmware behavior. This polls the meter directly instead, using the same
-approach already verified working in read_meter.py.
+Polls the meter directly instead of relying on the converter's built-in
+MQTT publishing, which depends on undocumented, unreliable firmware
+behavior. Uses the same approach already verified working in
+read_meter.py.
 
 Setup: copy config/settings_TEMPLATE.yaml to config/settings.yaml and fill
 in the "meter" section, then schedule this to run periodically via cron,
