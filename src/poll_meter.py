@@ -5,8 +5,7 @@ reading into the local SQLite database.
 
 Polls the meter directly instead of relying on the converter's built-in
 MQTT publishing, which depends on undocumented, unreliable firmware
-behavior. Uses the same approach already verified working in
-read_meter.py.
+behavior.
 
 Setup: copy config/settings_TEMPLATE.yaml to config/settings.yaml and fill
 in the "meter" section, then schedule this to run periodically via cron,
