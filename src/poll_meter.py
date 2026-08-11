@@ -10,9 +10,9 @@ MQTT publishing, which depends on undocumented, unreliable firmware
 behavior.
 
 Setup: fill in the "meters" list in config/settings.yaml (one entry per
-converter), then schedule this to run periodically via cron, e.g. every
-5 minutes:
-    */5 * * * * /path/to/AutoMeter/venv/bin/python /path/to/AutoMeter/src/poll_meter.py
+meter, with a meter_id and a converter_id), then schedule this to run
+periodically via cron, e.g. every 15 minutes:
+    */15 * * * * /path/to/AutoMeter/venv/bin/python /path/to/AutoMeter/src/poll_meter.py
 
 Run manually with:  python src/poll_meter.py
 """
@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS readings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp DATETIME NOT NULL,
     unit_id TEXT NOT NULL,
+    meter_id TEXT,
+    converter_id TEXT,
     voltage_avg_v REAL,
     total_active_power_w REAL,
     power_factor REAL,
@@ -66,9 +68,25 @@ CREATE TABLE IF NOT EXISTS readings (
 """
 
 INSERT_ROW = """
-INSERT INTO readings (timestamp, unit_id, voltage_avg_v, total_active_power_w, power_factor, frequency_hz)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO readings
+    (timestamp, unit_id, meter_id, converter_id, voltage_avg_v, total_active_power_w, power_factor, frequency_hz)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 """
+
+
+def ensure_schema(db):
+    """Add meter_id/converter_id to a readings table created before they
+    existed, and backfill them from the old unit_id column so historical
+    rows still show up in the per-meter/per-converter dashboard views."""
+    db.execute(CREATE_TABLE)
+    columns = {row[1] for row in db.execute("PRAGMA table_info(readings)")}
+    if "meter_id" not in columns:
+        db.execute("ALTER TABLE readings ADD COLUMN meter_id TEXT")
+    if "converter_id" not in columns:
+        db.execute("ALTER TABLE readings ADD COLUMN converter_id TEXT")
+    db.execute("UPDATE readings SET meter_id = unit_id WHERE meter_id IS NULL")
+    db.execute("UPDATE readings SET converter_id = unit_id WHERE converter_id IS NULL")
+    db.commit()
 
 
 def read_float(client, address, unit):
@@ -91,16 +109,18 @@ def read_all_registers(client, modbus_address):
     }
 
 
-def store_reading(unit_id, values):
+def store_reading(meter_id, converter_id, values):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(db_path)
     try:
-        db.execute(CREATE_TABLE)
+        ensure_schema(db)
         db.execute(
             INSERT_ROW,
             (
                 datetime.now().isoformat(),
-                unit_id,
+                meter_id,
+                meter_id,
+                converter_id,
                 values["voltage_avg_v"],
                 values["total_active_power_w"],
                 values["power_factor"],
@@ -116,7 +136,8 @@ def poll_one_meter(meter_cfg):
     converter_ip = meter_cfg["converter_ip"]
     port = meter_cfg.get("modbus_tcp_port", DEFAULT_MODBUS_TCP_PORT)
     modbus_address = meter_cfg.get("modbus_address", DEFAULT_MODBUS_ADDRESS)
-    unit_id = meter_cfg["unit_id"]
+    meter_id = meter_cfg["meter_id"]
+    converter_id = meter_cfg["converter_id"]
 
     client = ModbusTcpClient(converter_ip, port=port, timeout=5)
     if not client.connect():
@@ -126,22 +147,31 @@ def poll_one_meter(meter_cfg):
     finally:
         client.close()
 
-    store_reading(unit_id, values)
+    store_reading(meter_id, converter_id, values)
     return values
 
 
 def main():
+    for meter_cfg in meters:
+        if "meter_id" not in meter_cfg or "converter_id" not in meter_cfg:
+            raise KeyError(
+                "A meter entry in settings.yaml is missing 'meter_id' and/or "
+                "'converter_id'. The config format changed from a single "
+                "'unit_id' to separate 'meter_id' and 'converter_id' fields — "
+                "update your config/settings.yaml accordingly."
+            )
+
     ok, failed = 0, []
     for meter_cfg in meters:
-        unit_id = meter_cfg.get("unit_id", meter_cfg.get("converter_ip", "?"))
+        meter_id = meter_cfg["meter_id"]
         try:
             values = poll_one_meter(meter_cfg)
         except Exception as e:
-            failed.append(unit_id)
-            print(f"[{unit_id}] ERROR: {e}")
+            failed.append(meter_id)
+            print(f"[{meter_id}] ERROR: {e}")
             continue
         ok += 1
-        print(f"[{unit_id}] Stored reading: {values}")
+        print(f"[{meter_id}] Stored reading: {values}")
 
     print(f"Done: {ok}/{len(meters)} meter(s) polled successfully.")
     if failed:
