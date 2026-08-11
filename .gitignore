@@ -4,5 +4,4 @@ venv/
 .venv/
 *.db
 data/
-config/settings.yaml
 .env

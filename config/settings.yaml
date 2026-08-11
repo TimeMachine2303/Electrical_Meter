@@ -1,0 +1,27 @@
+# Copy this file to settings.yaml and fill in real values.
+# settings.yaml is in .gitignore so your passwords never get committed to GitHub.
+
+database:
+  path: "data/meter_readings.db"
+
+# Used by poll_meter.py (scheduled collection) to talk to each meter
+# directly over Modbus TCP. One entry per floor/converter. modbus_tcp_port
+# and modbus_address are optional per entry — default to 8899 and 1, the
+# Waveshare and PM2230 factory defaults (check a converter's own "Network A
+# Setting" page if it was reconfigured to something else).
+meters:
+  - converter_ip: "192.168.1.60"
+    unit_id: "unit1"
+  # - converter_ip: "192.168.1.xx"   # floor 2's converter IP
+  #   unit_id: "floor2"
+  # - converter_ip: "192.168.1.xx"   # floor 3's converter IP
+  #   unit_id: "floor3"
+  # - converter_ip: "192.168.1.xx"   # floor 4's converter IP
+  #   unit_id: "floor4"
+  # - converter_ip: "192.168.1.xx"   # floor 5's converter IP
+  #   unit_id: "floor5"
+
+# Used by cloud_sync.py to push new readings from the local SQLite database
+# up to a hosted Postgres database (e.g. a free Supabase or Neon project).
+cloud:
+  database_url: "postgresql://postgres.vwesahcmwzvthdlcnnkm:Hannaisdum23@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres?sslmode=require"
