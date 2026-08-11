@@ -7,9 +7,8 @@ Polls the meter directly instead of relying on the converter's built-in
 MQTT publishing, which depends on undocumented, unreliable firmware
 behavior.
 
-Setup: copy config/settings_TEMPLATE.yaml to config/settings.yaml and fill
-in the "meter" section, then schedule this to run periodically via cron,
-e.g. every 5 minutes:
+Setup: fill in the "meter" section of config/settings.yaml, then schedule
+this to run periodically via cron, e.g. every 5 minutes:
     */5 * * * * /path/to/AutoMeter/venv/bin/python /path/to/AutoMeter/src/poll_meter.py
 
 Run manually with:  python src/poll_meter.py

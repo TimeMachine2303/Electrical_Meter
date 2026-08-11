@@ -5,8 +5,8 @@ free Supabase or Neon project) so they're available even if the Pi's disk
 is lost.
 
 Setup: add a "cloud" section to config/settings.yaml with your Postgres
-connection string (see config/settings_TEMPLATE.yaml), then schedule this
-to run periodically on the Pi via cron, e.g. every 5 minutes:
+connection string, then schedule this to run periodically on the Pi via
+cron, e.g. every 5 minutes:
     */5 * * * * /usr/bin/python3 /path/to/AutoMeter/src/cloud_sync.py
 
 Run manually with:  python src/cloud_sync.py
