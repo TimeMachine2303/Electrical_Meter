@@ -6,5 +6,4 @@ venv/
 data/
 .env
 .streamlit/secrets.toml
-config/settings.yaml
 .claude/settings.local.json
