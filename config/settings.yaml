@@ -23,7 +23,7 @@ meters:
   - converter_id: "floor1"
     converter_ip: "192.168.1.60"
     meter_id: "floor1_meter1"
-    modbusaddress: 2 
+    modbus_address: 2 
   # - converter_id: "floor2"
   #   converter_ip: "192.168.1.xx"   # floor 2's converter IP
   #   meter_id: "floor2_meter1"
